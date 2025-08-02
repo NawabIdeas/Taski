@@ -1,0 +1,1730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taski Coin - User Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        :root {
+            --primary-bg: #121212;
+            --secondary-bg: #1a1a1a;
+            --accent-color: #FFD700;
+            --text-light: #FFFFFF;
+            --text-dark: #000000;
+            --success: #4CAF50;
+            --warning: #FF9800;
+            --error: #F44336;
+            --card-bg: #1e1e1e;
+            --border-color: #333333;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--primary-bg);
+            color: var(--text-light);
+            min-height: 100vh;
+            padding-bottom: 70px;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 215, 0, 0.05) 0%, rgba(255, 215, 0, 0) 20%),
+                radial-gradient(circle at 90% 80%, rgba(255, 215, 0, 0.05) 0%, rgba(255, 215, 0, 0) 20%);
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+            min-height: 100vh;
+            background: var(--secondary-bg);
+            box-shadow: var(--shadow);
+            overflow-x: hidden;
+        }
+        
+        /* Header Styles */
+        header {
+            background-color: var(--accent-color);
+            color: var(--text-dark);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .menu-btn {
+            background: none;
+            border: none;
+            color: var(--text-dark);
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .menu-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            flex-grow: 1;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        
+        .profile-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.3s;
+        }
+        
+        .profile-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .profile-pic {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            font-size: 18px;
+            border: 2px solid var(--text-dark);
+        }
+        
+        /* Main Content Styles */
+        .main-content {
+            padding: 20px;
+        }
+        
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 215, 0, 0.1);
+        }
+        
+        .card-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--accent-color);
+            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+            padding-bottom: 10px;
+        }
+        
+        .balance-container {
+            text-align: center;
+            padding: 25px 0;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .balance-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-color), #ffaa00, var(--accent-color));
+            background-size: 200% 200%;
+            animation: gradientFlow 3s linear infinite;
+        }
+        
+        @keyframes gradientFlow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+        
+        .balance-label {
+            font-size: 18px;
+            color: var(--accent-color);
+            margin-bottom: 10px;
+        }
+        
+        .balance-amount {
+            font-size: 36px;
+            font-weight: bold;
+            color: var(--text-light);
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary {
+            background: var(--accent-color);
+            color: var(--text-dark);
+        }
+        
+        .btn-primary:hover {
+            background: #e6c200;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-disabled {
+            background: #555;
+            color: #999;
+            cursor: not-allowed;
+        }
+        
+        .referral-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .referral-input {
+            flex-grow: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: #2a2a2a;
+            color: var(--text-light);
+            font-size: 14px;
+        }
+        
+        .copy-btn {
+            background: #333;
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            padding: 0 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .copy-btn:hover {
+            background: #444;
+            transform: scale(1.05);
+        }
+        
+        .referral-bonus {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 14px;
+            color: var(--accent-color);
+        }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            border-top: 1px solid var(--border-color);
+            max-width: 500px;
+            margin: 0 auto;
+            z-index: 100;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #777;
+            text-decoration: none;
+            font-size: 12px;
+            transition: all 0.3s;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 8px;
+        }
+        
+        .nav-item.active, .nav-item:hover {
+            color: var(--accent-color);
+            background: rgba(255, 215, 0, 0.1);
+        }
+        
+        .nav-item i {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        
+        /* Side Navigation */
+        .side-nav {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100%;
+            background: var(--card-bg);
+            z-index: 200;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .side-nav.open {
+            left: 0;
+        }
+        
+        .nav-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 150;
+            display: none;
+        }
+        
+        .nav-overlay.open {
+            display: block;
+        }
+        
+        .nav-header {
+            background: var(--accent-color);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .nav-profile-pic {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            border: 2px solid var(--text-dark);
+        }
+        
+        .nav-username {
+            color: var(--text-dark);
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .nav-menu {
+            list-style: none;
+            padding: 20px 0;
+        }
+        
+        .nav-item-list {
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .nav-item-list:hover {
+            background: #333;
+        }
+        
+        .nav-item-list i {
+            width: 24px;
+            text-align: center;
+            color: var(--accent-color);
+        }
+        
+        /* Modals */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        
+        .modal.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .modal-content {
+            background: var(--card-bg);
+            width: 90%;
+            max-width: 400px;
+            border-radius: 12px;
+            padding: 25px;
+            transform: translateY(20px);
+            transition: transform 0.3s;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            box-shadow: var(--shadow);
+        }
+        
+        .modal.open .modal-content {
+            transform: translateY(0);
+        }
+        
+        .modal-title {
+            font-size: 22px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--accent-color);
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-cancel {
+            background: #444;
+            color: var(--text-light);
+        }
+        
+        .btn-confirm {
+            background: var(--accent-color);
+            color: var(--text-dark);
+        }
+        
+        /* Profile Page */
+        .profile-page {
+            display: none;
+        }
+        
+        .profile-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 0;
+        }
+        
+        .profile-pic-large {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin-bottom: 20px;
+            border: 3px solid var(--accent-color);
+        }
+        
+        .profile-username {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .profile-email {
+            color: #aaa;
+            margin-bottom: 30px;
+        }
+        
+        .delete-btn {
+            background: var(--error);
+            color: white;
+        }
+        
+        .delete-btn:hover {
+            background: #d32f2f;
+        }
+        
+        /* Withdraw Page */
+        .withdraw-page {
+            display: none;
+        }
+        
+        .method-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .method-btn {
+            flex: 1;
+            min-width: 100px;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: #2a2a2a;
+            color: var(--text-light);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .method-btn:hover {
+            background: #333;
+        }
+        
+        .method-btn.active {
+            border-color: var(--accent-color);
+            background: rgba(255, 215, 0, 0.1);
+            color: var(--accent-color);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #aaa;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: #2a2a2a;
+            color: var(--text-light);
+        }
+        
+        .min-amount {
+            text-align: center;
+            margin: 10px 0;
+            color: var(--accent-color);
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        /* Status Page */
+        .status-page {
+            display: none;
+        }
+        
+        .status-item {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--warning);
+        }
+        
+        .status-item.approved {
+            border-left-color: var(--success);
+        }
+        
+        .status-item.rejected {
+            border-left-color: var(--error);
+        }
+        
+        .status-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .status-method {
+            font-weight: bold;
+        }
+        
+        .status-pending {
+            color: var(--warning);
+        }
+        
+        .status-approved {
+            color: var(--success);
+        }
+        
+        .status-rejected {
+            color: var(--error);
+        }
+        
+        .status-amount {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .status-date {
+            color: #aaa;
+            font-size: 14px;
+        }
+        
+        .no-requests {
+            text-align: center;
+            padding: 20px;
+            color: #aaa;
+        }
+        
+        /* Contact Page */
+        .contact-page {
+            display: none;
+        }
+        
+        .contact-message {
+            text-align: center;
+            font-size: 18px;
+            margin: 30px 0;
+            line-height: 1.6;
+            padding: 0 10px;
+        }
+        
+        /* Redeem Modal */
+        .redeem-input {
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: #2a2a2a;
+            color: var(--text-light);
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .get-code-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: #333;
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .get-code-btn:hover {
+            background: #444;
+        }
+        
+        .error-message {
+            color: var(--error);
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        /* Tasks Page */
+        .tasks-page {
+            display: none;
+        }
+        
+        .task-card {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--accent-color);
+        }
+        
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .task-title {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .task-reward {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+        
+        .task-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: var(--accent-color);
+            color: var(--text-dark);
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .task-btn:hover {
+            background: #e6c200;
+        }
+        
+        .task-btn.completed {
+            background: #555;
+            color: #999;
+            cursor: not-allowed;
+        }
+        
+        /* Follow Page */
+        .follow-page {
+            display: none;
+        }
+        
+        .social-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .social-card {
+            background: #2a2a2a;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 215, 0, 0.1);
+        }
+        
+        .social-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+        }
+        
+        .social-icon {
+            font-size: 36px;
+            margin-bottom: 15px;
+        }
+        
+        .social-icon.fb { color: #3b5998; }
+        .social-icon.wa { color: #25D366; }
+        .social-icon.yt { color: #FF0000; }
+        .social-icon.tg { color: #0088cc; }
+        
+        .social-name {
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        /* Animation for check-in */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Countdown timer */
+        .countdown {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+            color: var(--accent-color);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            background: var(--success);
+            color: white;
+            box-shadow: var(--shadow);
+            transform: translateX(200%);
+            transition: transform 0.3s ease;
+            z-index: 400;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.error {
+            background: var(--error);
+        }
+        
+        .notification.warning {
+            background: var(--warning);
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid var(--accent-color);
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+            display: none;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 30px 20px;
+            color: #777;
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Notification -->
+        <div class="notification" id="notification"></div>
+        
+        <!-- Header -->
+        <header>
+            <button class="menu-btn" id="menuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="logo">Taski Coin</div>
+            <button class="profile-btn" id="profileBtn">
+                <div class="profile-pic">
+                    <i class="fas fa-user"></i>
+                </div>
+            </button>
+        </header>
+        
+        <!-- Main Content -->
+        <div class="main-content" id="mainContent">
+            <!-- Dashboard -->
+            <div class="dashboard-page">
+                <div class="balance-container">
+                    <div class="balance-label">Your Balance</div>
+                    <div class="balance-amount" id="balanceAmount">Taski 0.000</div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fas fa-calendar-check"></i>
+                        Daily Check-in
+                    </div>
+                    <button class="btn btn-primary" id="checkinBtn">Claim Your Daily Reward</button>
+                    <div class="countdown" id="countdown">Next check-in available in 12:00:00</div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fas fa-users"></i>
+                        Affiliate Program
+                    </div>
+                    <p style="margin-bottom: 15px; line-height: 1.5;">
+                        Invite your friends and earn 50 Taski Coins for each user who signs up using your referral link.
+                    </p>
+                    <div class="referral-container">
+                        <input type="text" class="referral-input" id="referralInput" value="https://t.me/TaskiCoinBot?ref=user123" readonly>
+                        <button class="copy-btn" id="copyBtn">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                    <div class="referral-bonus">
+                        Earn 50 Taski Coins per referral
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Profile Page -->
+            <div class="profile-page" id="profilePage">
+                <div class="profile-header">
+                    <div class="profile-pic-large">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="profile-username" id="profileUsername">@telegramuser</div>
+                    <div class="profile-email">user@example.com</div>
+                </div>
+                
+                <div class="card">
+                    <button class="btn delete-btn" id="deleteAccountBtn">
+                        <i class="fas fa-trash-alt"></i> Delete Account
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Withdraw Page -->
+            <div class="withdraw-page" id="withdrawPage">
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fas fa-wallet"></i>
+                        Withdraw Funds
+                    </div>
+                    
+                    <div class="method-selector">
+                        <div class="method-btn active" data-method="jazzcash">JazzCash</div>
+                        <div class="method-btn" data-method="easypaisa">EasyPaisa</div>
+                        <div class="method-btn" data-method="usdt">USDT (TRC20)</div>
+                    </div>
+                    
+                    <div class="method-form" id="jazzcashForm">
+                        <div class="form-group">
+                            <label class="form-label">Account Name</label>
+                            <input type="text" class="form-input" id="accountName" placeholder="Enter your account name">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Account Number</label>
+                            <input type="text" class="form-input" id="accountNumber" placeholder="Enter your account number">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Amount (Taski Coins)</label>
+                            <input type="number" class="form-input" id="withdrawAmount" placeholder="Enter amount">
+                        </div>
+                        <div class="min-amount">Minimum: 2,000 Taski Coins</div>
+                    </div>
+                    
+                    <div class="method-form" id="usdtForm" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label">Wallet Address</label>
+                            <input type="text" class="form-input" id="walletAddress" placeholder="Enter your USDT wallet address">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Amount (Taski Coins)</label>
+                            <input type="number" class="form-input" id="usdtAmount" placeholder="Enter amount">
+                        </div>
+                        <div class="min-amount">Minimum: 5,000 Taski Coins</div>
+                    </div>
+                    
+                    <button class="btn btn-primary" id="submitWithdraw">Submit Withdrawal Request</button>
+                    <div class="error-message" id="withdrawError" style="margin-top: 15px; display: none;"></div>
+                </div>
+            </div>
+            
+            <!-- Status Page -->
+            <div class="status-page" id="statusPage">
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fas fa-history"></i>
+                        Withdrawal Status
+                    </div>
+                    
+                    <div id="withdrawalRequests">
+                        <div class="no-requests">
+                            <i class="fas fa-inbox"></i>
+                            <p>No withdrawal requests found</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contact Page -->
+            <div class="contact-page" id="contactPage">
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fas fa-headset"></i>
+                        Contact Support
+                    </div>
+                    <div class="contact-message">
+                        If you have any questions or need assistance, please don't hesitate to contact our support team. We're available 24/7 to help you with any issues you may encounter.
+                    </div>
+                    <button class="btn btn-primary" id="getHelpBtn">
+                        <i class="fas fa-life-ring"></i> Get Help
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Tasks Page -->
+            <div class="tasks-page" id="tasksPage">
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fas fa-tasks"></i>
+                        Join & Earn
+                    </div>
+                    
+                    <div id="tasksContainer">
+                        <div class="empty-state">
+                            <i class="fas fa-tasks"></i>
+                            <p>No active tasks at the moment</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Follow Page -->
+            <div class="follow-page" id="followPage">
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fas fa-heart"></i>
+                        Follow Us
+                    </div>
+                    
+                    <div id="socialContainer">
+                        <div class="social-grid">
+                            <div class="social-card">
+                                <div class="social-icon fb">
+                                    <i class="fab fa-facebook"></i>
+                                </div>
+                                <div class="social-name">Facebook</div>
+                                <button class="btn btn-primary">Join Now</button>
+                            </div>
+                            
+                            <div class="social-card">
+                                <div class="social-icon wa">
+                                    <i class="fab fa-whatsapp"></i>
+                                </div>
+                                <div class="social-name">WhatsApp</div>
+                                <button class="btn btn-primary">Join Now</button>
+                            </div>
+                            
+                            <div class="social-card">
+                                <div class="social-icon yt">
+                                    <i class="fab fa-youtube"></i>
+                                </div>
+                                <div class="social-name">YouTube</div>
+                                <button class="btn btn-primary">Join Now</button>
+                            </div>
+                            
+                            <div class="social-card">
+                                <div class="social-icon tg">
+                                    <i class="fab fa-telegram"></i>
+                                </div>
+                                <div class="social-name">Telegram</div>
+                                <button class="btn btn-primary">Join Now</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <div class="nav-item active" data-page="redeem">
+                <i class="fas fa-gift"></i>
+                <span>Redeem</span>
+            </div>
+            <div class="nav-item" data-page="tasks">
+                <i class="fas fa-coins"></i>
+                <span>Join & Earn</span>
+            </div>
+            <div class="nav-item" data-page="follow">
+                <i class="fas fa-user-plus"></i>
+                <span>Follow</span>
+            </div>
+        </div>
+        
+        <!-- Side Navigation -->
+        <div class="side-nav" id="sideNav">
+            <div class="nav-header">
+                <div class="nav-profile-pic">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="nav-username">@telegramuser</div>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item-list" data-page="dashboard">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </li>
+                <li class="nav-item-list" data-page="withdraw">
+                    <i class="fas fa-wallet"></i>
+                    <span>Withdraw</span>
+                </li>
+                <li class="nav-item-list" data-page="status">
+                    <i class="fas fa-history"></i>
+                    <span>Status</span>
+                </li>
+                <li class="nav-item-list" data-page="contact">
+                    <i class="fas fa-headset"></i>
+                    <span>Contact</span>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="nav-overlay" id="navOverlay"></div>
+        
+        <!-- Delete Account Modal -->
+        <div class="modal" id="deleteModal">
+            <div class="modal-content">
+                <div class="modal-title">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Delete Account
+                </div>
+                <p>Are you sure you want to delete your account? All your data including your balance will be permanently deleted. This action cannot be undone.</p>
+                <div class="modal-actions">
+                    <button class="modal-btn btn-cancel" id="cancelDelete">Cancel</button>
+                    <button class="modal-btn btn-confirm" id="confirmDelete">Delete Account</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Redeem Modal -->
+        <div class="modal" id="redeemModal">
+            <div class="modal-content">
+                <div class="modal-title">
+                    <i class="fas fa-gift"></i>
+                    Redeem Code
+                </div>
+                <input type="text" class="redeem-input" id="redeemCode" placeholder="Enter your redeem code">
+                <div class="error-message" id="redeemError">Invalid redeem code. Please try again.</div>
+                <button class="btn btn-primary" id="redeemNowBtn">Redeem Now</button>
+                <button class="get-code-btn" id="getCodeBtn">
+                    <i class="fas fa-ticket-alt"></i> Get Redeem Code
+                </button>
+                <div class="spinner" id="redeemSpinner"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCBYyzCR5iDihKG-YgiKGnPTqWSRgEscrw",
+            authDomain: "earnflow-3cqoj.firebaseapp.com",
+            databaseURL: "https://earnflow-3cqoj-default-rtdb.firebaseio.com",
+            projectId: "earnflow-3cqoj",
+            storageBucket: "earnflow-3cqoj.firebasestorage.app",
+            messagingSenderId: "557959267984",
+            appId: "1:557959267984:web:2230ffd284b72812723a15"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        
+        // DOM Elements
+        const menuBtn = document.getElementById('menuBtn');
+        const profileBtn = document.getElementById('profileBtn');
+        const sideNav = document.getElementById('sideNav');
+        const navOverlay = document.getElementById('navOverlay');
+        const balanceAmount = document.getElementById('balanceAmount');
+        const checkinBtn = document.getElementById('checkinBtn');
+        const countdown = document.getElementById('countdown');
+        const referralInput = document.getElementById('referralInput');
+        const copyBtn = document.getElementById('copyBtn');
+        const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+        const deleteModal = document.getElementById('deleteModal');
+        const cancelDelete = document.getElementById('cancelDelete');
+        const confirmDelete = document.getElementById('confirmDelete');
+        const profileUsername = document.getElementById('profileUsername');
+        const profilePage = document.getElementById('profilePage');
+        const withdrawPage = document.getElementById('withdrawPage');
+        const statusPage = document.getElementById('statusPage');
+        const contactPage = document.getElementById('contactPage');
+        const tasksPage = document.getElementById('tasksPage');
+        const followPage = document.getElementById('followPage');
+        const methodBtns = document.querySelectorAll('.method-btn');
+        const jazzcashForm = document.getElementById('jazzcashForm');
+        const usdtForm = document.getElementById('usdtForm');
+        const navItems = document.querySelectorAll('.nav-item');
+        const navItemLists = document.querySelectorAll('.nav-item-list');
+        const redeemModal = document.getElementById('redeemModal');
+        const redeemCode = document.getElementById('redeemCode');
+        const redeemNowBtn = document.getElementById('redeemNowBtn');
+        const getCodeBtn = document.getElementById('getCodeBtn');
+        const redeemError = document.getElementById('redeemError');
+        const redeemSpinner = document.getElementById('redeemSpinner');
+        const notification = document.getElementById('notification');
+        const getHelpBtn = document.getElementById('getHelpBtn');
+        const submitWithdraw = document.getElementById('submitWithdraw');
+        const accountName = document.getElementById('accountName');
+        const accountNumber = document.getElementById('accountNumber');
+        const withdrawAmount = document.getElementById('withdrawAmount');
+        const walletAddress = document.getElementById('walletAddress');
+        const usdtAmount = document.getElementById('usdtAmount');
+        const withdrawError = document.getElementById('withdrawError');
+        const withdrawalRequests = document.getElementById('withdrawalRequests');
+        const tasksContainer = document.getElementById('tasksContainer');
+        
+        // User data
+        let userData = {
+            id: "user123",
+            username: "@telegramuser",
+            balance: 1250.753,
+            lastCheckin: null,
+            referralCode: "user123",
+            completedTasks: {},
+            withdrawalRequests: {}
+        };
+        
+        // Tasks data (would normally come from Firebase)
+        const tasks = [
+            { id: "task1", title: "Join Telegram Channel", reward: 10, url: "https://t.me/TaskiCoin", completed: false },
+            { id: "task2", title: "Follow on Twitter", reward: 15, url: "https://twitter.com/TaskiCoin", completed: false },
+            { id: "task3", title: "Share on Facebook", reward: 20, url: "https://facebook.com/TaskiCoin", completed: true },
+            { id: "task4", title: "Subscribe YouTube", reward: 25, url: "https://youtube.com/TaskiCoin", completed: false }
+        ];
+        
+        // Social links
+        const socialLinks = [
+            { platform: "Facebook", icon: "fab fa-facebook", url: "https://facebook.com/TaskiCoin", active: true },
+            { platform: "WhatsApp", icon: "fab fa-whatsapp", url: "https://wa.me/123456789", active: true },
+            { platform: "YouTube", icon: "fab fa-youtube", url: "https://youtube.com/TaskiCoin", active: true },
+            { platform: "Telegram", icon: "fab fa-telegram", url: "https://t.me/TaskiCoin", active: true }
+        ];
+        
+        // Redeem codes
+        const validRedeemCodes = ["TASKI2023", "GOLDEN50", "WELCOME100"];
+        
+        // Initialize the app
+        function initApp() {
+            // Set username
+            profileUsername.textContent = userData.username;
+            document.querySelector('.nav-username').textContent = userData.username;
+            
+            // Set referral link
+            referralInput.value = `https://t.me/TaskiCoinBot?ref=${userData.referralCode}`;
+            
+            // Set balance
+            updateBalance();
+            
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Check last check-in time
+            checkLastCheckin();
+            
+            // Load withdrawal requests
+            loadWithdrawalRequests();
+            
+            // Load tasks
+            loadTasks();
+        }
+        
+        // Update balance display
+        function updateBalance() {
+            balanceAmount.textContent = `Taski ${userData.balance.toFixed(3)}`;
+        }
+        
+        // Check last check-in and update UI accordingly
+        function checkLastCheckin() {
+            if (userData.lastCheckin) {
+                const now = new Date();
+                const lastCheckinTime = new Date(userData.lastCheckin);
+                const diffHours = Math.abs(now - lastCheckinTime) / 36e5;
+                
+                if (diffHours < 12) {
+                    checkinBtn.disabled = true;
+                    checkinBtn.classList.remove('btn-primary');
+                    checkinBtn.classList.add('btn-disabled');
+                    checkinBtn.textContent = "Already Claimed Today";
+                    
+                    // Calculate remaining time
+                    const remainingHours = 12 - diffHours;
+                    const hours = Math.floor(remainingHours);
+                    const minutes = Math.floor((remainingHours - hours) * 60);
+                    const seconds = Math.floor((((remainingHours - hours) * 60) - minutes) * 60);
+                    
+                    countdown.textContent = `Next check-in available in ${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                } else {
+                    checkinBtn.classList.add('pulse');
+                    countdown.textContent = "Claim your daily reward now!";
+                }
+            } else {
+                checkinBtn.classList.add('pulse');
+                countdown.textContent = "Claim your first daily reward!";
+            }
+        }
+        
+        // Show notification
+        function showNotification(message, isError = false) {
+            notification.textContent = message;
+            notification.className = "notification";
+            
+            if (isError) {
+                notification.classList.add("error");
+            } else {
+                notification.classList.add("success");
+            }
+            
+            notification.classList.add("show");
+            
+            setTimeout(() => {
+                notification.classList.remove("show");
+            }, 3000);
+        }
+        
+        // Load withdrawal requests
+        function loadWithdrawalRequests() {
+            // Clear existing content
+            withdrawalRequests.innerHTML = '';
+            
+            // Check if there are requests
+            const requests = [
+                { id: "req1", method: "JazzCash", status: "pending", amount: 2500, date: "2023-06-15 14:30" },
+                { id: "req2", method: "USDT (TRC20)", status: "approved", amount: 5500, date: "2023-06-10 09:15" }
+            ];
+            
+            if (requests.length === 0) {
+                withdrawalRequests.innerHTML = `
+                    <div class="no-requests">
+                        <i class="fas fa-inbox"></i>
+                        <p>No withdrawal requests found</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Add requests to the list
+            requests.forEach(request => {
+                const statusClass = request.status === "approved" ? "approved" : 
+                                   request.status === "rejected" ? "rejected" : "pending";
+                
+                const statusText = request.status === "approved" ? "Approved" : 
+                                  request.status === "rejected" ? "Rejected" : "Pending";
+                
+                const statusColor = request.status === "approved" ? "status-approved" : 
+                                   request.status === "rejected" ? "status-rejected" : "status-pending";
+                
+                const requestElement = document.createElement('div');
+                requestElement.className = `status-item ${statusClass}`;
+                requestElement.innerHTML = `
+                    <div class="status-header">
+                        <div class="status-method">${request.method}</div>
+                        <div class="${statusColor}">${statusText}</div>
+                    </div>
+                    <div class="status-amount">${request.amount.toLocaleString()} Taski</div>
+                    <div class="status-date">${request.date}</div>
+                `;
+                
+                withdrawalRequests.appendChild(requestElement);
+            });
+        }
+        
+        // Load tasks
+        function loadTasks() {
+            // Clear existing content
+            tasksContainer.innerHTML = '';
+            
+            // Filter active tasks
+            const activeTasks = tasks.filter(task => !task.completed);
+            
+            if (activeTasks.length === 0) {
+                tasksContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-tasks"></i>
+                        <p>No active tasks at the moment</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Add tasks to the list
+            activeTasks.forEach(task => {
+                const taskElement = document.createElement('div');
+                taskElement.className = 'task-card';
+                taskElement.innerHTML = `
+                    <div class="task-header">
+                        <div class="task-title">${task.title}</div>
+                        <div class="task-reward">+${task.reward} Taski</div>
+                    </div>
+                    <button class="task-btn" data-id="${task.id}">Go</button>
+                `;
+                
+                tasksContainer.appendChild(taskElement);
+            });
+            
+            // Add event listeners to task buttons
+            document.querySelectorAll('.task-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const taskId = this.getAttribute('data-id');
+                    completeTask(taskId);
+                });
+            });
+        }
+        
+        // Setup all event listeners
+        function setupEventListeners() {
+            // Menu button
+            menuBtn.addEventListener('click', () => {
+                sideNav.classList.add('open');
+                navOverlay.classList.add('open');
+            });
+            
+            // Overlay click
+            navOverlay.addEventListener('click', () => {
+                sideNav.classList.remove('open');
+                navOverlay.classList.remove('open');
+            });
+            
+            // Profile button
+            profileBtn.addEventListener('click', () => {
+                showPage('profile');
+            });
+            
+            // Daily check-in button
+            checkinBtn.addEventListener('click', () => {
+                claimDailyReward();
+            });
+            
+            // Copy referral link
+            copyBtn.addEventListener('click', () => {
+                referralInput.select();
+                document.execCommand('copy');
+                showNotification("Referral link copied to clipboard!");
+            });
+            
+            // Delete account button
+            deleteAccountBtn.addEventListener('click', () => {
+                deleteModal.classList.add('open');
+            });
+            
+            // Delete modal buttons
+            cancelDelete.addEventListener('click', () => {
+                deleteModal.classList.remove('open');
+            });
+            
+            confirmDelete.addEventListener('click', () => {
+                showNotification("Account deleted successfully!");
+                deleteModal.classList.remove('open');
+                // In a real app, this would delete the user's account
+            });
+            
+            // Navigation items (side menu)
+            navItemLists.forEach(item => {
+                item.addEventListener('click', () => {
+                    const page = item.getAttribute('data-page');
+                    showPage(page);
+                    sideNav.classList.remove('open');
+                    navOverlay.classList.remove('open');
+                });
+            });
+            
+            // Bottom navigation items
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const page = item.getAttribute('data-page');
+                    
+                    // Remove active class from all
+                    navItems.forEach(navItem => {
+                        navItem.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked
+                    item.classList.add('active');
+                    
+                    if (page === 'redeem') {
+                        redeemModal.classList.add('open');
+                        redeemCode.value = "";
+                        redeemError.style.display = "none";
+                    } else {
+                        showPage(page);
+                    }
+                });
+            });
+            
+            // Withdraw method buttons
+            methodBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const method = btn.getAttribute('data-method');
+                    
+                    // Remove active class from all
+                    methodBtns.forEach(b => {
+                        b.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked
+                    btn.classList.add('active');
+                    
+                    // Show the correct form
+                    if (method === 'jazzcash' || method === 'easypaisa') {
+                        jazzcashForm.style.display = 'block';
+                        usdtForm.style.display = 'none';
+                    } else if (method === 'usdt') {
+                        jazzcashForm.style.display = 'none';
+                        usdtForm.style.display = 'block';
+                    }
+                });
+            });
+            
+            // Close modals when clicking outside
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.remove('open');
+                    }
+                });
+            });
+            
+            // Redeem code functionality
+            redeemNowBtn.addEventListener('click', () => {
+                const code = redeemCode.value.trim().toUpperCase();
+                
+                if (!code) {
+                    redeemError.textContent = "Please enter a redeem code";
+                    redeemError.style.display = "block";
+                    return;
+                }
+                
+                if (validRedeemCodes.includes(code)) {
+                    redeemSpinner.style.display = "block";
+                    redeemNowBtn.disabled = true;
+                    
+                    // Simulate API call
+                    setTimeout(() => {
+                        userData.balance += 50;
+                        updateBalance();
+                        redeemSpinner.style.display = "none";
+                        redeemNowBtn.disabled = false;
+                        redeemModal.classList.remove('open');
+                        showNotification("Redeem successful! 50 Taski Coins added to your account");
+                    }, 1500);
+                } else {
+                    redeemError.textContent = "Invalid redeem code. Please try again.";
+                    redeemError.style.display = "block";
+                }
+            });
+            
+            // Get redeem code button
+            getCodeBtn.addEventListener('click', () => {
+                // In a real app, this would open a URL set by admin
+                showNotification("Redirecting to redeem code page...");
+                setTimeout(() => {
+                    window.open("https://example.com/redeem-codes", "_blank");
+                }, 500);
+            });
+            
+            // Submit withdrawal request
+            submitWithdraw.addEventListener('click', () => {
+                const activeMethod = document.querySelector('.method-btn.active').getAttribute('data-method');
+                let amount;
+                
+                if (activeMethod === 'jazzcash' || activeMethod === 'easypaisa') {
+                    amount = parseFloat(withdrawAmount.value);
+                    
+                    if (!accountName.value || !accountNumber.value || !amount) {
+                        withdrawError.textContent = "Please fill all fields";
+                        withdrawError.style.display = "block";
+                        return;
+                    }
+                    
+                    if (amount < 2000) {
+                        withdrawError.textContent = "Minimum withdrawal is 2,000 Taski Coins";
+                        withdrawError.style.display = "block";
+                        return;
+                    }
+                    
+                    if (amount > userData.balance) {
+                        withdrawError.textContent = "Insufficient balance";
+                        withdrawError.style.display = "block";
+                        return;
+                    }
+                } else if (activeMethod === 'usdt') {
+                    amount = parseFloat(usdtAmount.value);
+                    
+                    if (!walletAddress.value || !amount) {
+                        withdrawError.textContent = "Please fill all fields";
+                        withdrawError.style.display = "block";
+                        return;
+                    }
+                    
+                    if (amount < 5000) {
+                        withdrawError.textContent = "Minimum withdrawal is 5,000 Taski Coins";
+                        withdrawError.style.display = "block";
+                        return;
+                    }
+                    
+                    if (amount > userData.balance) {
+                        withdrawError.textContent = "Insufficient balance";
+                        withdrawError.style.display = "block";
+                        return;
+                    }
+                }
+                
+                // Process withdrawal
+                userData.balance -= amount;
+                updateBalance();
+                showNotification(`Withdrawal request for ${amount} Taski submitted!`);
+                withdrawError.style.display = "none";
+                
+                // Reset form
+                accountName.value = "";
+                accountNumber.value = "";
+                withdrawAmount.value = "";
+                walletAddress.value = "";
+                usdtAmount.value = "";
+                
+                // Reload requests
+                loadWithdrawalRequests();
+                showPage('status');
+            });
+            
+            // Get Help button
+            getHelpBtn.addEventListener('click', () => {
+                // In a real app, this would open a URL set by admin
+                window.open("https://t.me/TaskiCoinSupport", "_blank");
+            });
+            
+            // Social buttons
+            document.querySelectorAll('.social-card .btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // In a real app, this would open the social URL
+                    window.open("https://example.com/social", "_blank");
+                    showNotification("Opening social media page...");
+                });
+            });
+        }
+        
+        // Complete a task
+        function completeTask(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            // Add reward to balance
+            userData.balance += task.reward;
+            updateBalance();
+            
+            // Mark task as completed
+            task.completed = true;
+            
+            // Update UI
+            loadTasks();
+            
+            // Show success message
+            showNotification(`Task completed! ${task.reward} Taski Coins added to your account`);
+        }
+        
+        // Claim daily reward
+        function claimDailyReward() {
+            if (checkinBtn.disabled) return;
+            
+            // Add reward to balance
+            const reward = 0.003;
+            userData.balance += reward;
+            userData.lastCheckin = new Date().toISOString();
+            
+            // Update UI
+            updateBalance();
+            checkinBtn.disabled = true;
+            checkinBtn.classList.remove('btn-primary', 'pulse');
+            checkinBtn.classList.add('btn-disabled');
+            checkinBtn.textContent = "Already Claimed Today";
+            
+            // Start countdown timer
+            startCountdown();
+            
+            // Show success message
+            showNotification(`Daily reward claimed! ${reward} Taski Coins added to your account`);
+        }
+        
+        // Start the 12-hour countdown
+        function startCountdown() {
+            let hours = 11;
+            let minutes = 59;
+            let seconds = 59;
+            
+            const countdownInterval = setInterval(() => {
+                countdown.textContent = `Next check-in available in ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                seconds--;
+                if (seconds < 0) {
+                    seconds = 59;
+                    minutes--;
+                    if (minutes < 0) {
+                        minutes = 59;
+                        hours--;
+                        if (hours < 0) {
+                            clearInterval(countdownInterval);
+                            checkinBtn.disabled = false;
+                            checkinBtn.classList.remove('btn-disabled');
+                            checkinBtn.classList.add('btn-primary', 'pulse');
+                            checkinBtn.textContent = "Claim Your Daily Reward";
+                            countdown.textContent = "Claim your daily reward now!";
+                        }
+                    }
+                }
+            }, 1000);
+        }
+        
+        // Show specific page
+        function showPage(page) {
+            // Hide all pages
+            document.querySelector('.dashboard-page').style.display = 'none';
+            profilePage.style.display = 'none';
+            withdrawPage.style.display = 'none';
+            statusPage.style.display = 'none';
+            contactPage.style.display = 'none';
+            tasksPage.style.display = 'none';
+            followPage.style.display = 'none';
+            
+            // Show requested page
+            if (page === 'dashboard') {
+                document.querySelector('.dashboard-page').style.display = 'block';
+            } else if (page === 'profile') {
+                profilePage.style.display = 'block';
+            } else if (page === 'withdraw') {
+                withdrawPage.style.display = 'block';
+            } else if (page === 'status') {
+                statusPage.style.display = 'block';
+            } else if (page === 'contact') {
+                contactPage.style.display = 'block';
+            } else if (page === 'tasks') {
+                tasksPage.style.display = 'block';
+            } else if (page === 'follow') {
+                followPage.style.display = 'block';
+            }
+        }
+        
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
